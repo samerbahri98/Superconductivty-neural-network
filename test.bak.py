@@ -15,7 +15,8 @@ datasetFile = open("./dataset/train.csv", "r")
 
 datasetLines = datasetFile.read().split("\n")
 datasetFile.close()
-shuffle(datasetLines[1:len(datasetLines)])
+datasetLines=datasetLines[1:len(datasetLines)]
+shuffle(datasetLines)
 
 
 def comma_separate_line(dataset): return [line.split(",") for line in dataset]
@@ -29,16 +30,19 @@ input = ""
 
 input += "\n".join(["\t".join(line[0:81]) for line in trainSet])+"\n"
 input += "\n".join([line[81] for line in trainSet])+"\n"
-input += "\n".join(["\t".join(line[0:81]) for line in testSet])+"\n"
-input += "\n".join([line[81] for line in testSet])
+input += "\n".join(["\t".join(line[0:81]) for line in testSet])
+# +"\n"
+# input += "\n".join([line[81] for line in testSet])
 
-p = subprocess.Popen(["python", "./solution.py"], stdout=subprocess.PIPE,
-                     stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+# p = subprocess.Popen(["python", "./solution.py"], stdout=subprocess.PIPE,
+#                      stdin=subprocess.PIPE, stderr=subprocess.PIPE)
 
-solutionOutput = p.communicate(input=input.encode())[0].decode()
+# solutionOutput = p.communicate(input=input.encode())[0].decode()
 
-predictions = solutionOutput.split("\n")[0:-1]
+# predictions = solutionOutput.split("\n")[0:-1]
 
-print(predictions)
+# print(predictions)
+
+print(input)
 
 # print(rmse(predictions,[line[81] for line in testSet]))
