@@ -3,12 +3,13 @@ from random import uniform
 from math import sqrt
 from layer import Layer
 
+
 class NeuralNetwork:
     def __init__(self, train_input, train_output) -> None:
         self.train_input: Matrix = train_input
         self.train_output: Matrix = train_output
         self.layers: list[Layer] = []
-        self.d_weights: list[Matrix] = []
+
         self.unit_delta_matrix = self.create_unit_delta_matrix()
 
     def forward(self, hidden_layers):
@@ -35,17 +36,26 @@ class NeuralNetwork:
         for i in range(len(self.train_output)):
             row = []
             for j in range(len(self.train_output)):
-                if i==j:row.append(1)
-                else: row.append(0)
+                if i == j:
+                    row.append(1)
+                else:
+                    row.append(0)
             unit_matrix.append(row)
         return Matrix(unit_matrix)
-    
+
     def backpropagation(self):
-        deltas: list[Matrix] = [self.unit_delta_matrix]
+        self.d_weights: list[Matrix] = []
+        J = self.error()
+        # ititialize deltas[max] = I/(JN)
+        delta = self.unit_delta_matrix.scale(1/(J*len(self.train_output.data)))
+        deltas: list[Matrix] = [delta]
         for i in range(len(self.layers), 0, -1):
-            # delta[n] = delta[n+1] * W[n]^T * f'(Z[n]) in matrices
-            delta = deltas[-1].multiply(self.layers[i].weights.transpose().multiply(
-                self.layers[i].weightedInputs.derivative()))
+            # deltas[n] = deltas[n+1] × (W[n]^T ° f'(Z[n])) in matrices
+            f_prime = self.layers[i].weightedInputs.derivative()
+            w_T = self.layers[i].weights.transpose()
+            delta = deltas[-1].multiply(w_T.hadamard(f_prime))
             deltas.append(delta)
-            weight = self.layers[i].previous_layer.multiply(delta)
-            self.d_weights.append(weight)
+            # dJ/dW[i] = a[i-1]^T × delta[i]
+            a_T = self.layers[i].previous_layer.transpose()
+            d_weight = a_T.multiply(delta)
+            self.d_weights.append(d_weight)

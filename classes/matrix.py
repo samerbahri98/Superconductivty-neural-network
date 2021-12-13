@@ -1,4 +1,3 @@
-
 class Matrix:
     def __init__(self, data):
         self.data = data
@@ -49,7 +48,7 @@ class Matrix:
                 result[i][j] *= b
         return Matrix(result)
 
-    def s_multiply(self, b):
+    def hadamard(self, b):
         result = self.data
         for i in range(len(self.data)):
             for j in range(len(self.data[0])):
