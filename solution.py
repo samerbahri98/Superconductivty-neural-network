@@ -120,7 +120,7 @@ class Layer:
         for i in range(len(self.previous_layer.data[0])):
             row = []
             for j in range(self.number_of_neurons):
-                row.append(uniform(-100, 100))
+                row.append(uniform(-1, 1))
             weights.append(row)
         self.weights = Matrix(weights)
 
@@ -133,9 +133,10 @@ class Layer:
 
 
 class NeuralNetwork:
-    def __init__(self, train_input, train_output, hidden_layers) -> None:
+    def __init__(self, train_input, train_output, hidden_layers, test_input) -> None:
         self.train_input: Matrix = train_input
         self.train_output: Matrix = train_output
+        self.test_input: Matrix = test_input
         # hidden layers is an array of the number of neurons in the layer[i]
         self.hidden_layers: list[int] = hidden_layers
         self.layers: list[Layer] = []
@@ -202,17 +203,29 @@ class NeuralNetwork:
             d = copy.deepcopy(self.d_weights[i]).scale(self.rate)
             self.layers[i].weights = self.layers[i].weights.add(d)
 
-    def learn(self, target, rate=1):
+    def test(self):
+        self.layers[0].previous_layer = self.test_input
+        self.forward()
+        f = open("./output.json", "a")
+        f.write(json.dumps(copy.deepcopy(self.train_predictions.data)))
+        f.close()
+        f = open("./weights.json", "a")
+        f.write(json.dumps([copy.deepcopy(layer.weights.data) for layer in self.layers]))
+        f.close()
+        
+        
+    
+    def learn(self, target, rate=0.01):
+        # note: investigate why changing the rate is changing the error at i=0
         self.rate = rate
+        i = 0
         while True:
             self.backpropagation()
             self.adjust()
-            # self.rate /= 10
+            # i+=1
+            # self.rate  =  self.rate*5  / 6
             print(self.J)
-            f = open("./output.txt", "a")
-            f.write(json.dumps(copy.deepcopy(self.train_predictions.data)))
-            f.close()
-            if self.J < 10:
+            if self.J < target:
                 break
             self.forward()
 
@@ -222,7 +235,8 @@ train_input = Matrix(train_input_array)
 train_output = Matrix(train_output_array)
 test_input = Matrix(test_input_array)
 
-nn = NeuralNetwork(train_input, train_output, [60,1])
-nn.learn(10)
+nn = NeuralNetwork(train_input, train_output, [40,1],test_input)
+nn.learn(13)
+nn.test()
 
-print(nn.train_predictions, nn.train_output)
+# print(nn.train_predictions, nn.train_output)
